@@ -1,0 +1,85 @@
+import math
+
+class Esign:
+
+    def __init__(self, num_p, num_q, message):
+        self.num_p = num_p
+        self.num_q = num_q
+        self.message = message
+
+    def get_number_n(self):
+        return self.num_p * self.num_q
+
+    def get_number_f(self):
+        return (self.num_p - 1) * (self.num_q - 1)
+
+    def get_number_e(self):
+        min_e = 2
+        while math.gcd(min_e, self.get_number_f()) != 1:
+            min_e += 1
+        return min_e
+
+    def extended_gcd(self, a, b):
+        if b == 0:
+            return a, 1, 0
+        g, x1, y1 = self.extended_gcd(b, a % b)
+        return g, y1, x1 - (a // b) * y1
+
+    def get_number_d(self):
+        g, x, y = self.extended_gcd(self.get_number_e(), self.get_number_f())
+        return x % self.get_number_f()
+
+    def get_ASCII(self):
+        return [ord(ch) for ch in self.message]
+
+    def convert_to_hash(self):
+        numbers = self.get_ASCII()
+        bit_stream = ""
+        bit_size = 16
+        blocks = []
+
+        for number in numbers:
+            bit_number = format(number, '016b')
+            bit_stream += bit_number
+
+        for i in range(0, len(bit_stream), bit_size):
+            blocks.append(bit_stream[i:i + bit_size])
+
+        result = int(bit_stream[0], 2)
+
+        for block in blocks[1:]:
+            new_block = int(block, 2)
+            result ^= new_block
+            result >>= 1
+        return result
+
+    def get_rsa_private_key(self):
+        return {'d': self.get_number_d(), 'n': self.get_number_n()}
+
+    def get_rsa_public_key(self):
+        return {'e': self.get_number_e(), 'n': self.get_number_n()}
+
+    def create_sign(self):
+        my_hash = int(self.convert_to_hash())
+        key = self.get_rsa_private_key()
+        return pow(my_hash, key['d'], key['n'])
+
+    def check_sign(self, signature):
+        my_hash = int(self.convert_to_hash())
+        key = self.get_rsa_public_key()
+        decrypt_hash = pow(signature, key['e'], key['n'])
+        return my_hash == decrypt_hash
+
+
+message = 'How are you?'
+number_p = 193
+number_q = 353
+
+esign = Esign(number_p, number_q, message)
+
+signature = esign.create_sign()
+print(esign.check_sign(signature))   # True
+signature = esign.create_sign() + 1
+print(esign.check_sign(signature))   # False
+
+
