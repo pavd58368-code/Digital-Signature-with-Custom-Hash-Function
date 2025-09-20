@@ -1,0 +1,50 @@
+Digital Signature with Custom Hash Function
+Goal
+
+Develop a program that generates and verifies a digital signature using RSA and a custom hash function.
+
+The chosen hash algorithm:
+
+Split the input text into 16-bit blocks.
+
+Apply XOR over the blocks.
+
+Apply a cyclic right shift by 1 on each XOR operation.
+
+Initial Data
+
+Language: Python
+
+Base cryptosystem: RSA (from previous lab)
+
+Message: "Как дела?"
+
+Algorithm
+
+Input numbers p, q and a message.
+
+Compute RSA parameters:
+
+n = p * q
+
+f = (p - 1)(q - 1)
+
+e – minimal integer coprime with f
+
+d – modular inverse of e mod f
+
+Convert the message into ASCII codes.
+
+Transform each ASCII code into a 16-bit binary block.
+
+Join all blocks into one stream, then split into 16-bit blocks again.
+
+Apply XOR + right shift by 1 iteratively → get final hash.
+
+Generate digital signature:
+
+Signature = hash^d mod n
+
+Verify signature:
+
+Decrypt with public key → compare with computed hash.
